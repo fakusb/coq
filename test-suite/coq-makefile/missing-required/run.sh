@@ -12,5 +12,5 @@ EOF
 
 coq_makefile -f _CoqProject -o Makefile
 make 2> stdErr.log || true
-msg="Lib.noSuchFile"
+msg="noSuchFile"
 grep -q $msg "stdErr.log"
