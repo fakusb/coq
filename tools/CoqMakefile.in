@@ -715,7 +715,7 @@ else
 TIMING_EXTRA =
 endif
 
-$(VOFILES): %.vo: %.v
+$(VOFILES): %.vo: %.v | $(VDFILE)
 	$(SHOW)COQC $<
 	$(HIDE)$(TIMER) $(COQC) $(COQDEBUG) $(TIMING_ARG) $(COQFLAGS) $(COQLIBS) $< $(TIMING_EXTRA)
 
@@ -762,11 +762,25 @@ $(GHTMLFILES): %.g.html: %.v %.glob
 # Dependency files ############################################################
 
 ifndef MAKECMDGOALS
-  -include $(ALLDFILES)
+	flagIncludeALLDFILES=1
 else
   ifneq ($(filter-out archclean clean cleanall printenv make-pretty-timed make-pretty-timed-before make-pretty-timed-after print-pretty-timed print-pretty-timed-diff print-pretty-single-time-diff,$(MAKECMDGOALS)),)
-   -include $(ALLDFILES)
- endif
+    flagIncludeALLDFILES=1
+  endif
+endif
+
+ifdef flagIncludeALLDFILES
+  VFILESNOTFOUND=$(filter-out $(wildcard $(VFILES)),$(VFILES))
+  ifneq ($(VFILESNOTFOUND),)
+    ifndef IGNOREMISSINGVFILE
+      $(warning W: Can't find $(VFILESNOTFOUND). Pass IGNOREMISSINGVFILE=1 to disable this check)
+      include $(ALLDFILES)
+    else
+      -include $(ALLDFILES)
+    endif
+  else
+    -include $(ALLDFILES)
+  endif
 endif
 
 .SECONDARY: $(ALLDFILES)
